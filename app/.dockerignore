@@ -1,0 +1,70 @@
+# ============================================================
+# .dockerignore — กันไฟล์เข้า image ตอน `COPY . .` ใน Dockerfile
+#
+# เป้า 2 อย่าง:
+#   1) Security — กัน secret/env หลุดเข้า image (โดยเฉพาะ NEXT_PUBLIC_* ที่จะ inline)
+#   2) Speed/size — ตัด build context, ลด layer size, เร่ง cache hit
+#
+# ⚠️ pattern ทุกตัวคำนวณจาก build context (= /mnt/e/VPS/dockerVPSfrontend/app)
+# ============================================================
+
+# ────────────────────────────────────────────────
+# [1] Dependencies & build artifacts (regenerate ใน image)
+# ────────────────────────────────────────────────
+node_modules/
+.next/                       # local build cache ของ next dev — ใน image build ใหม่หมด
+out/                         # static export output (ไม่ได้ใช้ — เราใช้ standalone)
+build/
+
+# ────────────────────────────────────────────────
+# [2] Secrets & env (อย่าให้หลุดเข้า image)
+# NEXT_PUBLIC_* ส่งผ่าน --build-arg ใน docker compose แทน
+# ────────────────────────────────────────────────
+.env
+.env.*
+*.pem
+
+# ────────────────────────────────────────────────
+# [3] VCS / CI / IDE / OS
+# ────────────────────────────────────────────────
+.git/
+.github/
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# ────────────────────────────────────────────────
+# [4] Logs & debug
+# ────────────────────────────────────────────────
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# ────────────────────────────────────────────────
+# [5] Docs & agent metadata (ไม่จำเป็นใน runtime image)
+# ────────────────────────────────────────────────
+README.md
+AGENTS.md
+CLAUDE.md
+.claude/
+
+# ────────────────────────────────────────────────
+# [6] TypeScript build info / Vercel
+# ────────────────────────────────────────────────
+*.tsbuildinfo
+next-env.d.ts                # next regenerate ตอน build ใน image
+.vercel/
+
+# ────────────────────────────────────────────────
+# [7] Coverage / test artifacts
+# ────────────────────────────────────────────────
+coverage/
+
+# ────────────────────────────────────────────────
+# [8] Docker / compose ของ stack เอง (ไม่ต้อง copy เข้า image)
+# ────────────────────────────────────────────────
+Dockerfile
+.dockerignore
+docker-compose*.yml
